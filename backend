@@ -1,1 +1,88 @@
+// server.js
+const express = require('express');
+const bodyParser = require('body-parser');
+const mysql = require('mysql');
+
+const app = express();
+const port = 3000;
+
+// MySQL Connection
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'your_username',
+  password: 'your_password',
+  database: 'your_database'
+});
+
+// Connect to MySQL
+db.connect((err) => {
+  if (err) throw err;
+  console.log('Connected to MySQL database');
+});
+
+// Middleware
+app.use(bodyParser.json());
+
+// CRUD Operations
+
+// Create a new user
+app.post('/users', (req, res) => {
+  const { name, email, dob } = req.body;
+  const sql = 'INSERT INTO Registration (name, email, dob) VALUES (?, ?, ?)';
+  db.query(sql, [name, email, dob], (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error creating user');
+    } else {
+      res.status(201).send('User created successfully');
+    }
+  });
+});
+
+// Read all users
+app.get('/users', (req, res) => {
+  const sql = 'SELECT * FROM Registration';
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error fetching users');
+    } else {
+      res.status(200).json(result);
+    }
+  });
+});
+
+// Update user information
+app.put('/users/:id', (req, res) => {
+  const { name, email, dob } = req.body;
+  const id = req.params.id;
+  const sql = 'UPDATE Registration SET name=?, email=?, dob=? WHERE id=?';
+  db.query(sql, [name, email, dob, id], (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error updating user');
+    } else {
+      res.status(200).send('User updated successfully');
+    }
+  });
+});
+
+// Delete a user
+app.delete('/users/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = 'DELETE FROM Registration WHERE id=?';
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error deleting user');
+    } else {
+      res.status(200).send('User deleted successfully');
+    }
+  });
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
 
